@@ -79,47 +79,56 @@ def generate_quiz(payload: dict):
     url = payload.get("url", "")
     wiki = fetch_wikipedia_text(url)
 
-    # 🔥 FALLBACK TEXT (never fail)
-    text = (
-        wiki["extract"]
-        if wiki
-        else "Artificial intelligence is a branch of computer science that focuses on building intelligent machines."
-    )
+    text = wiki["extract"] if wiki else ""
 
-    title = wiki["title"] if wiki else "Wikipedia Quiz"
+    if not text:
+        return {
+            "error": "Is Wikipedia page se quiz generate nahi ho paya"
+        }
+
+    title = wiki["title"]
 
     sentences = split_sentences(text)
+    sentences = [s.strip() for s in sentences if len(s.strip()) > 40]
     random.shuffle(sentences)
 
     questions = []
-    target = random.randint(5, 8)
+    used_questions = set()
+
+    target = random.randint(8, 10)
 
     for s in sentences:
         mcq = make_mcq(s)
-        if mcq:
-            questions.append(mcq)
+        if not mcq:
+            continue
+
+        if mcq["question"] in used_questions:
+            continue
+
+        questions.append(mcq)
+        used_questions.add(mcq["question"])
+
         if len(questions) >= target:
             break
 
-    # 🔥 HARD GUARANTEE: questions never empty
-    while len(questions) < 5:
-        questions.append({
-            "question": "Artificial intelligence is a field of computer science.",
-            "options": ["True", "False", "Maybe", "Unknown"],
-            "answer": "True",
-            "difficulty": "easy"
-        })
+    i = 0
+    while len(questions) < 8 and i < len(sentences):
+        shuffled = " ".join(random.sample(sentences[i].split(), len(sentences[i].split())))
+        mcq = make_mcq(shuffled)
 
-    summary_lines = sentences[:3]
-    point_lines = sentences[3:7]
+        if mcq and mcq["question"] not in used_questions:
+            questions.append(mcq)
+            used_questions.add(mcq["question"])
+
+        i += 1
 
     quiz = {
         "id": ID_COUNTER,
         "title": title,
         "url": url,
-        "summary": " ".join(summary_lines),
-        "points": point_lines,
-        "questions": questions,
+        "summary": " ".join(sentences[:3]),
+        "points": sentences[3:7],
+        "questions": questions[:10],  
         "created_at": datetime.utcnow().isoformat()
     }
 
