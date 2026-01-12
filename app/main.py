@@ -4,7 +4,6 @@ from app.api.quiz import router as quiz_router
 
 app = FastAPI()
 
-# 🔥 CORS FIX (VERY IMPORTANT)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
