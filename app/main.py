@@ -7,10 +7,11 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://ai-mcq-generator-seven.vercel.app"
+        "https://ai-mcq-generator-frontend-alpha.vercel.app",
+        "https://ai-mcq-generator-seven.vercel.app",
     ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["*"],   
     allow_headers=["*"],
 )
 
